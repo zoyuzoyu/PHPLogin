@@ -44,6 +44,7 @@ function responseError() {
 function responseSuccess($body) {
 	$response = [
 		'state' => 1,
+		'message' => 'Login Success!',
 		'data' => $body
 	];
 	http_response_code(200);
