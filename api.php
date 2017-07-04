@@ -35,6 +35,7 @@ function login($param) {
 function responseError() {
 	$response = [
 		'state' => 0,
+		'message' => 'Response Error!',
 	];
 	http_response_code(405);
 	header('Content-Type: application/json');
