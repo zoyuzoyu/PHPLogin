@@ -1,0 +1,3 @@
+RewriteEngine on
+RewriteRule ^api_get/(.*)$ api_get.php?PATH_INFO=$1&%{QUERY_STRING}
+RewriteRule ^api/(.*)$ api.php?PATH_INFO=$1
