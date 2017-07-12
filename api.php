@@ -20,6 +20,9 @@ function post($space,$param) {
 		case 'login':
 			login($param);
 			break;	
+		case 'regist':
+			regist($param);
+			break;	
 		default:
 			responseError();
 			break;
@@ -28,7 +31,53 @@ function post($space,$param) {
 
 function login($param) {
 	// return $param;
-	responseSuccess($param);
+	$username = $param['username'];
+	$password = $param['password'];
+	if (strlen($username) < 6|| strlen($password)<6) {
+		responseError('用户名或密码错误');
+	}
+
+	$link = connectDB();
+
+	if ($link) {
+		$result = isExsiteFromDB($link,$username,$password);
+		$err_message = mysqli_error($link);
+		closeDB($link);
+
+		if ($result) {
+			responseSuccess('Login Success!');
+		} else {
+			responseError($err_message?:'用户名或密码错误');
+		}
+	} else {
+		responseError('connectDB error');
+	}
+}
+
+function regist($param) {
+	// return $param;
+	$username = $param['username'];
+	$password = $param['password'];
+	if (strlen($username) < 6|| strlen($password)<6) {
+		responseError('用户名或密码最少需要6位');
+	}
+
+	$link = connectDB();
+
+	if ($link) {
+		$result = addUserIntoDB($link,$username,$password);
+		$err_message = mysqli_error($link);
+		closeDB($link);
+
+		if ($result) {
+			responseSuccess('Register Success!');
+		} else {
+			responseError($err_message);
+		}
+	} else {
+		responseError('connectDB error');
+	}
+
 }
 
 function responseError($message) {
@@ -36,17 +85,16 @@ function responseError($message) {
 		'state' => 0,
 		'message' => $message,
 	];
-	http_response_code(405);
+	http_response_code(200);
 	header('Content-Type: application/json');
 	print json_encode($response);
 	die;
 }
 
-function responseSuccess($body) {
+function responseSuccess($message) {
 	$response = [
 		'state' => 1,
-		'message' => 'Login Success!',
-		'data' => $body
+		'message' => $message,
 	];
 	http_response_code(200);
 	header('Content-Type: application/json');
@@ -59,7 +107,7 @@ function responseSuccess($body) {
 function connectDB() {	
 	$user = 'root';
 	$password = 'root';
-	$db = 'phplogin';
+	$db = 'user';
 	$host = 'localhost';
 	$port = 8889;
 
@@ -70,8 +118,7 @@ function connectDB() {
 	);
 
 	if (mysqli_connect_errno()) {
-    	responseError();
-
+    	return;
 	}
 
 	$db_selected = mysqli_select_db(
@@ -79,7 +126,9 @@ function connectDB() {
     	$db
 	);
 
-	return $link;
+	if ($db_selected) {
+		return $link;
+	}
 }
 
 function closeDB($link) {
@@ -87,8 +136,17 @@ function closeDB($link) {
 }
 
 function addUserIntoDB($link,$username,$password) {
-	mysqli_query($link,"INSERT INTO user (username, password) VALUES (" .$username. "," .$password. ")");
+	return mysqli_query($link,"INSERT INTO user (username, password) VALUES ('$username', '$password')");
 }
+
+function isExsiteFromDB($link,$username,$password) {
+	$result = mysqli_query($link,"select * from user where username = '$username' and password = '$password'");
+	while ($row = mysqli_fetch_array($result)) {
+		return true;
+	}
+}
+
+
 
 
 
